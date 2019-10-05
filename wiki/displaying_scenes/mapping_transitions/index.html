@@ -1,0 +1,1275 @@
+<!DOCTYPE HTML>
+<!--
+    Editorial by HTML5 UP
+    html5up.net | @ajlkn
+    Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+<head>
+
+
+
+
+<meta charset="utf-8"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+<meta name="generator" content="Orchid 0.17.4"/>
+<link rel="icon" href="https://nhaarman.github.io/acorn/favicon.ico">
+
+
+<meta name="robots" content="index, follow">
+
+
+
+<title>Binding transitions to SceneTransitions</title>
+
+
+<meta name="description" content="Mastering Android navigation">
+
+
+
+<link rel="prev" href="https://nhaarman.github.io/acorn/wiki/displaying_scenes/transition_animations">
+
+
+<link rel="next" href="https://nhaarman.github.io/acorn/wiki/activity">
+
+
+<script>
+    window.site = {"orchidVersion":"0.17.4","baseUrl":"https://nhaarman.github.io/acorn","environment":"debug","version":"1.1.0"};
+</script>
+
+
+
+
+
+<!-- start:debug info -->
+
+<!-- THEME -->
+<!-- Type: Editorial -->
+<!-- Class: com.eden.orchid.editorial.EditorialTheme -->
+
+<!-- PAGE -->
+<!-- Type: wiki -->
+<!-- Class: com.eden.orchid.wiki.pages.WikiPage -->
+<!-- Layout: index -->
+<!-- Resolved Layout: templates/layouts/index.peb -->
+<!-- Page Template: wiki, page -->
+<!-- Resolved Page Template:  -->
+
+<!-- RESOURCE -->
+<!-- Class: com.eden.orchid.api.resources.resource.FileResource -->
+<!-- Source Filename: wiki/displaying_scenes/mapping_transitions.md -->
+
+<!-- COMPLETE PAGE CONFIGURATION -->
+<script>
+    window.allData = {"reference":{"path":"wiki/displaying_scenes","baseUrl":"https://nhaarman.github.io/acorn","fileName":"mapping_transitions","extension":"html","usePrettyUrl":true,"link":"https://nhaarman.github.io/acorn/wiki/displaying_scenes/mapping_transitions"},"next":{"path":"wiki","baseUrl":"https://nhaarman.github.io/acorn","fileName":"activity","extension":"html","usePrettyUrl":true,"link":"https://nhaarman.github.io/acorn/wiki/activity"},"previous":{"path":"wiki/displaying_scenes","baseUrl":"https://nhaarman.github.io/acorn","fileName":"transition_animations","extension":"html","usePrettyUrl":true,"link":"https://nhaarman.github.io/acorn/wiki/displaying_scenes/transition_animations"},"description":"","title":"Binding transitions to SceneTransitions"};
+</script>
+
+<!-- end:debug info -->
+
+
+
+<!-- start:inject styles -->
+<link rel="stylesheet" type="text/css" href="https://nhaarman.github.io/acorn/Editorial/6090f8c6/assets/css/editorial_main.css"/>
+<link rel="stylesheet" type="text/css" href="https://nhaarman.github.io/acorn/Editorial/6090f8c6/assets/css/editorial_orchidCustomizations.css"/>
+<link rel="stylesheet" type="text/css" href="https://nhaarman.github.io/acorn/Editorial/6090f8c6/assets/css/orchidSearch.css"/>
+<link rel="stylesheet" type="text/css" href="https://nhaarman.github.io/acorn/assets/css/site.css"/>
+<link rel="stylesheet" type="text/css" href="https://nhaarman.github.io/acorn/assets/css/pygments.css"/>
+<style>
+.image-preview {
+  text-align: center; }
+  .image-preview img {
+    max-width: 80%; }
+
+</style>
+<!-- end:inject styles -->
+
+</head>
+<body class="is-loading">
+
+
+<!-- Wrapper -->
+<div id="wrapper">
+
+    <!-- Main -->
+    <div id="main">
+        <div class="inner">
+
+            <!-- Header -->
+            
+                <header id="header">
+    <a href="https://nhaarman.github.io/acorn" class="logo">Acorn</a>
+    <ul class="icons">
+    
+    
+        <li>
+            <a href="https://github.com/nhaarman/acorn" class="icon fa-github">
+                <span class="label">github</span>
+            </a>
+        </li>
+    
+    
+    </ul>
+</header>
+            
+            
+            
+            
+                <section id="pageContent">
+                    <header class="major"><h2>Binding transitions to SceneTransitions</h2></header>
+                    <article>
+                        
+    <!-- start:inject components -->
+    
+        
+            
+                
+                    
+                        <p>Just as with <code>ViewControllers</code>, Acorn needs to know when to use <em>your</em>
+<code>SceneTransition</code> implementation, or to fallback to one of the default types.
+A mapping needs to be created for this as well, and is done in a similar way as
+with ViewControllers.</p>
+<h2 id="the-scenetransitionfactory">The SceneTransitionFactory</h2>
+<p>The <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/transition/SceneTransitionFactory">SceneTransitionFactory</a> interface provides a
+<code>transitionFor(previousScene: Scene&lt;*&gt;, newScene: Scene&lt;*&gt;, data: TransitionData?): SceneTransition</code>
+function where you can define which implementation to use for a transition.
+The <code>supports(Scene, Scene, TransitionData?): Boolean</code> method in that same
+interface allows us to compose several SceneTransitionFactories together.</p>
+<div class="highlight"><pre><span></span><a name="line-1"></a><span class="lineno">1&nbsp;</span><span class="k">interface</span>&nbsp;<span class="nc">SceneTransitionFactory</span>&nbsp;<span class="p">{</span><br><a name="line-2"></a><span class="lineno">2&nbsp;</span><br><a name="line-3"></a><span class="lineno">3&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">fun</span>&nbsp;<span class="nf">supports</span><span class="p">(</span><span class="n">previousScene</span><span class="p">:</span>&nbsp;<span class="n">Scene</span><span class="p">&lt;*&gt;,</span>&nbsp;<span class="n">newScene</span><span class="p">:</span>&nbsp;<span class="n">Scene</span><span class="p">&lt;*&gt;,</span>&nbsp;<span class="k">data</span><span class="p">:</span>&nbsp;<span class="n">TransitionData</span><span class="p">?):</span>&nbsp;<span class="n">Boolean</span><br><a name="line-4"></a><span class="lineno">4&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">fun</span>&nbsp;<span class="nf">transitionFor</span><span class="p">(</span><span class="n">previousScene</span><span class="p">:</span>&nbsp;<span class="n">Scene</span><span class="p">&lt;*&gt;,</span>&nbsp;<span class="n">newScene</span><span class="p">:</span>&nbsp;<span class="n">Scene</span><span class="p">&lt;*&gt;,</span>&nbsp;<span class="k">data</span><span class="p">:</span>&nbsp;<span class="n">TransitionData</span><span class="p">?):</span>&nbsp;<span class="n">SceneTransition</span><br><a name="line-5"></a><span class="lineno">5&nbsp;</span><span class="p">}</span><br></pre></div><br>
+<p>A simple implementation for a transition from <code>MyScene1</code> to <code>MyScene2</code> could
+look like this:</p>
+<div class="highlight"><pre><span></span><a name="line-1"></a><span class="lineno">&nbsp;1&nbsp;</span><span class="k">class</span>&nbsp;<span class="nc">MySceneTransitionFactory</span>&nbsp;<span class="p">:</span>&nbsp;<span class="n">SceneTransitionFactory</span>&nbsp;<span class="p">{</span><br><a name="line-2"></a><span class="lineno">&nbsp;2&nbsp;</span><br><a name="line-3"></a><span class="lineno">&nbsp;3&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">override</span>&nbsp;<span class="k">fun</span>&nbsp;<span class="nf">supports</span><span class="p">(</span><span class="n">previousScene</span><span class="p">:</span>&nbsp;<span class="n">Scene</span><span class="p">&lt;*&gt;,</span>&nbsp;<span class="n">newScene</span><span class="p">:</span>&nbsp;<span class="n">Scene</span><span class="p">&lt;*&gt;,</span>&nbsp;<span class="k">data</span><span class="p">:</span>&nbsp;<span class="n">TransitionData</span><span class="p">?):</span>&nbsp;<span class="n">Boolean</span>&nbsp;<span class="p">{</span><br><a name="line-4"></a><span class="lineno">&nbsp;4&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">return</span>&nbsp;<span class="n">previousScene</span>&nbsp;<span class="k">is</span>&nbsp;<span class="n">MyScene1</span>&nbsp;<span class="p">&amp;&amp;</span>&nbsp;<span class="n">newScene</span>&nbsp;<span class="k">is</span>&nbsp;<span class="n">MyScene2</span><br><a name="line-5"></a><span class="lineno">&nbsp;5&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">}</span><br><a name="line-6"></a><span class="lineno">&nbsp;6&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;<br><a name="line-7"></a><span class="lineno">&nbsp;7&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">override</span>&nbsp;<span class="k">fun</span>&nbsp;<span class="nf">transitionFor</span><span class="p">(</span><span class="n">previousScene</span><span class="p">:</span>&nbsp;<span class="n">Scene</span><span class="p">&lt;*&gt;,</span>&nbsp;<span class="n">newScene</span><span class="p">:</span>&nbsp;<span class="n">Scene</span><span class="p">&lt;*&gt;,</span>&nbsp;<span class="k">data</span><span class="p">:</span>&nbsp;<span class="n">TransitionData</span><span class="p">?):</span>&nbsp;<span class="n">SceneTransition</span>&nbsp;<span class="p">{</span><br><a name="line-8"></a><span class="lineno">&nbsp;8&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">return</span>&nbsp;<span class="n">MyScene1MyScene2Transition</span><span class="p">()</span><br><a name="line-9"></a><span class="lineno">&nbsp;9&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">}</span><br><a name="line-10"></a><span class="lineno">10&nbsp;</span><span class="p">}</span><br></pre></div><br>
+<h3 id="transitiondata">TransitionData</h3>
+<p>The <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/TransitionData">TransitionData</a> parameter can contain useful information
+about the transition.
+Currently the class only contains an <code>isBackwards</code> property to denote whether
+the transition should be regarded as a 'step back in navigation'.
+The <code>TransitionData</code> parameter can be null if the Navigator that caused the
+transition does not support the notion of 'backwards', such as the
+<code>ReplacingNavigator</code>.</p>
+<div class="highlight"><pre><span></span><a name="line-1"></a><span class="lineno">1&nbsp;</span><span class="k">override</span>&nbsp;<span class="k">fun</span>&nbsp;<span class="nf">transitionFor</span><span class="p">(</span><span class="n">previousScene</span><span class="p">:</span>&nbsp;<span class="n">Scene</span><span class="p">&lt;*&gt;,</span>&nbsp;<span class="n">newScene</span><span class="p">:</span>&nbsp;<span class="n">Scene</span><span class="p">&lt;*&gt;,</span>&nbsp;<span class="k">data</span><span class="p">:</span>&nbsp;<span class="n">TransitionData</span><span class="p">?):</span>&nbsp;<span class="n">SceneTransition</span>&nbsp;<span class="p">{</span><br><a name="line-2"></a><span class="lineno">2&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">return</span>&nbsp;<span class="k">when</span>&nbsp;<span class="p">(</span><span class="k">data</span><span class="o">?.</span><span class="n">isBackwards</span><span class="p">)</span>&nbsp;<span class="p">{</span><br><a name="line-3"></a><span class="lineno">3&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">true</span>&nbsp;<span class="p">-&gt;</span>&nbsp;<span class="n">BackwardsTransition</span><span class="p">()</span><br><a name="line-4"></a><span class="lineno">4&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">else</span>&nbsp;<span class="p">-&gt;</span>&nbsp;<span class="n">ForwardsTransition</span><span class="p">()</span><br><a name="line-5"></a><span class="lineno">5&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">}</span><br><a name="line-6"></a><span class="lineno">6&nbsp;</span><span class="p">}</span><br></pre></div><br>
+<h2 id="transition-extensions">Transition extensions</h2>
+<p>Often screen transitions need some sort of 'default' behavior, such as hiding the keyboard
+when leaving the screen.
+Instead of having to write the code for hiding the keyboard in your transition implementation,
+Acorn provides a special <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/transition/DoBeforeTransition">DoBeforeTransition</a> class that can be used to
+execute a common block of code before the actual transition starts.</p>
+<p>The <code>SceneTransition.doOnStart</code> allows you to hook into this class.
+For example, the <code>SceneTransition.hideKeyboardOnStart()</code> function uses the <code>doOnStart</code>
+function to hide the keyboard:</p>
+<div class="highlight"><pre><span></span><a name="line-1"></a><span class="lineno">1&nbsp;</span><span class="k">override</span>&nbsp;<span class="k">fun</span>&nbsp;<span class="nf">transitionFor</span><span class="p">(</span><span class="n">previousScene</span><span class="p">:</span>&nbsp;<span class="n">Scene</span><span class="p">&lt;*&gt;,</span>&nbsp;<span class="n">newScene</span><span class="p">:</span>&nbsp;<span class="n">Scene</span><span class="p">&lt;*&gt;,</span>&nbsp;<span class="k">data</span><span class="p">:</span>&nbsp;<span class="n">TransitionData</span><span class="p">?):</span>&nbsp;<span class="n">SceneTransition</span>&nbsp;<span class="p">{</span><br><a name="line-2"></a><span class="lineno">2&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">return</span>&nbsp;<span class="n">MyTransition</span><span class="p">()</span><br><a name="line-3"></a><span class="lineno">3&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">.</span><span class="n">hideKeyboardOnStart</span><span class="p">()</span><br><a name="line-4"></a><span class="lineno">4&nbsp;</span><span class="p">}</span><br></pre></div><br>
+<p>The <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/transition/DefaultSceneTransitionFactory">DefaultSceneTransitionFactory</a> includes this keyboard hiding behavior by
+default.</p>
+
+                    
+                
+            
+        
+    
+    <!-- end:inject components -->
+
+
+                    </article>
+                </section>
+            
+        </div>
+        <hr>
+
+        <!-- Page Footer -->
+        <div class="inner">
+    <footer id="footer">
+        <div class="clearfix">
+            
+                <div class="float-left">
+                    <a href="https://nhaarman.github.io/acorn/wiki/displaying_scenes/transition_animations" class="button special small pill">
+                        <span>&larr;</span> Transition Animations
+                    </a>
+                </div>
+            
+            
+                <div class="float-right">
+                    <a href="https://nhaarman.github.io/acorn/wiki/activity" class="button special small pill">
+                        The Activity<span>&rarr;</span>
+                    </a>
+                </div>
+            
+        </div>
+    </footer>
+</div>
+
+    </div>
+
+    <!-- Sidebar -->
+    <div id="sidebar">
+    <div class="inner">
+
+        <!-- Search -->
+        <section id="search" class="alt">
+            <form data-orchid-search="">
+                <input type="text" name="query" id="query" placeholder="Search"/>
+            </form>
+            <div class="box" id="search-results" data-orchid-search-results style="display: none;">
+                <b>Search Results</b>
+                <ul></ul>
+            </div>
+            <div class="box" id="search-progress" data-orchid-search-progress style="display: none;">
+                <div class="loader">Loading...</div>
+            </div>
+        </section>
+
+        <!-- Menu -->
+        <nav id="siteNav" class="menu">
+            <header class="major">
+                <h2>Acorn</h2>
+            </header>
+            <ul class="top-level">
+                
+                    
+    
+    <li>
+        <a class="subheader">Wiki</a>
+    </li>
+    
+
+                
+                    
+    <li>
+        <span class="opener">Scenes</span>
+        <ul>
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/scenes/about">About Scenes</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/scenes/lifecycle">The Lifecyle</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/scenes/interface">The Scene interface</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/scenes/state_saving">Saving state</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/scenes/events">Events</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/scenes/base_implementations">Base implementations</a>
+    </li>
+    
+
+        
+        </ul>
+    </li>
+
+                
+                    
+    <li>
+        <span class="opener">Navigators</span>
+        <ul>
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/navigators/about">About Navigators</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/navigators/interface">The Navigator interface</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/navigators/state_saving">Saving state</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/navigators/base_implementations">Base implementations</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/navigators/composing_implementations">Composing implementations</a>
+    </li>
+    
+
+        
+            
+    <li>
+        <span class="opener">Advanced</span>
+        <ul>
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/navigators/advanced/scene_management">Scene management</a>
+    </li>
+    
+
+        
+        </ul>
+    </li>
+
+        
+        </ul>
+    </li>
+
+                
+                    
+    <li>
+        <span class="opener">Displaying Scenes</span>
+        <ul>
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/displaying_scenes/about">About</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/displaying_scenes/viewcontroller">The ViewController</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/displaying_scenes/mapping_scenes_layouts">Mapping Scenes to Layouts</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/displaying_scenes/transition_animations">Transition Animations</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/displaying_scenes/mapping_transitions">Binding transitions to SceneTransitions</a>
+    </li>
+    
+
+        
+        </ul>
+    </li>
+
+                
+                    
+    <li>
+        <span class="opener">The Activity</span>
+        <ul>
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/activity/about">About</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/activity/concepts">The Activity as a Plugin</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/activity/navigator_providing">Providing the Navigator</a>
+    </li>
+    
+
+        
+        </ul>
+    </li>
+
+                
+                    
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/setup">Setup</a>
+    </li>
+    
+
+                
+                    
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/getting_started">Getting started</a>
+    </li>
+    
+
+                
+                    
+    <li>
+        <span class="opener">Experimental</span>
+        <ul>
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/wiki/experimental/concurrentpairnavigator">ConcurrentPairNavigator</a>
+    </li>
+    
+
+        
+        </ul>
+    </li>
+
+                
+                    
+    
+    <li>
+        <a class="subheader">API Docs</a>
+    </li>
+    
+
+                
+                    
+    <li>
+        <span class="opener">All Packages</span>
+        <ul>
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/acorn">acorn</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn">com.nhaarman.acorn</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android">com.nhaarman.acorn.android</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/dispatching">com.nhaarman.acorn.android.dispatching</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/experimental">com.nhaarman.acorn.android.experimental</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/navigation">com.nhaarman.acorn.android.navigation</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/presentation">com.nhaarman.acorn.android.presentation</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/transition">com.nhaarman.acorn.android.transition</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/uistate">com.nhaarman.acorn.android.uistate</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/util">com.nhaarman.acorn.android.util</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation">com.nhaarman.acorn.navigation</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/experimental">com.nhaarman.acorn.navigation.experimental</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/presentation">com.nhaarman.acorn.presentation</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/state">com.nhaarman.acorn.state</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/testing">com.nhaarman.acorn.testing</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/util">com.nhaarman.acorn.util</a>
+    </li>
+    
+
+        
+        </ul>
+    </li>
+
+                
+                    
+    <li>
+        <span class="opener">All Classes</span>
+        <ul>
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/navigation/AbstractNavigatorProvider">AbstractNavigatorProvider</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/AcornActivity">AcornActivity</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/AcornActivityDelegate">AcornActivityDelegate</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/AcornAppCompatActivity">AcornAppCompatActivity</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/experimental/AcornEvents">AcornEvents</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/dispatching/AcornSceneDispatcher">AcornSceneDispatcher</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/presentation/ActivityController">ActivityController</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/presentation/ActivityControllerFactory">ActivityControllerFactory</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/AndroidLogger">AndroidLogger</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/presentation/BasicScene">BasicScene</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/experimental/BottomBarNavigator">BottomBarNavigator</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/dispatching/AcornSceneDispatcher/Callback">Callback</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/transition/SceneTransition/Callback">Callback</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/experimental/CombinedContainer">CombinedContainer</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/experimental/CombinedScene">CombinedScene</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/transition/ComposingSceneTransitionFactory">ComposingSceneTransitionFactory</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/presentation/ComposingViewControllerFactory">ComposingViewControllerFactory</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/CompositeDisposableHandle">CompositeDisposableHandle</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/experimental/CompositeParallelNavigator">CompositeParallelNavigator</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/CompositeReplacingNavigator">CompositeReplacingNavigator</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/CompositeStackNavigator">CompositeStackNavigator</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/experimental/ConcurrentPairNavigator">ConcurrentPairNavigator</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/presentation/Container">Container</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/testing/ContainerProvider">ContainerProvider</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/state/ContainerState">ContainerState</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/transition/DefaultSceneTransitionFactory">DefaultSceneTransitionFactory</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/experimental/AcornEvents/DispatchingListener">DispatchingListener</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/DisposableHandle">DisposableHandle</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/transition/DoBeforeTransition">DoBeforeTransition</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/Navigator/Events">Events</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/experimental/ExperimentalAcornEvents">ExperimentalAcornEvents</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/experimental/ExperimentalCompositeParallelNavigator">ExperimentalCompositeParallelNavigator</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/experimental/ExperimentalConcurrentPairNavigator">ExperimentalConcurrentPairNavigator</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/transition/FadeInFromBottomTransition">FadeInFromBottomTransition</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/transition/FadeOutToBottomTransition">FadeOutToBottomTransition</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/experimental/HookingSceneDispatcher">HookingSceneDispatcher</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/util/LazyVar">LazyVar</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/Logger">Logger</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/Navigator">Navigator</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/navigation/NavigatorProvider">NavigatorProvider</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/state/NavigatorState">NavigatorState</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/presentation/NoopActivityControllerFactory">NoopActivityControllerFactory</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/transition/NoopSceneTransitionFactory">NoopSceneTransitionFactory</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/presentation/NoopViewControllerFactory">NoopViewControllerFactory</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/OnBackPressListener">OnBackPressListener</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/presentation/ProvidesView">ProvidesView</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/ReplacingNavigator">ReplacingNavigator</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/presentation/RestorableContainer">RestorableContainer</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/testing/RestorableTestContainer">RestorableTestContainer</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/presentation/RestorableViewController">RestorableViewController</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/presentation/RxScene">RxScene</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/presentation/SavableContainer">SavableContainer</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/SavableNavigator">SavableNavigator</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/presentation/SavableScene">SavableScene</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/state/SavedState">SavedState</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/presentation/Scene">Scene</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/dispatching/SceneDispatcher">SceneDispatcher</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/dispatching/SceneDispatcherFactory">SceneDispatcherFactory</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/presentation/SceneKey">SceneKey</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/state/SceneState">SceneState</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/transition/SceneTransition">SceneTransition</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/transition/SceneTransitionFactory">SceneTransitionFactory</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/transition/SceneTransitionFactoryBuilder">SceneTransitionFactoryBuilder</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/presentation/SceneViewControllerFactory">SceneViewControllerFactory</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/SingleSceneNavigator">SingleSceneNavigator</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/StackNavigator">StackNavigator</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/testing/TestContext">TestContext</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/testing/TestLogger">TestLogger</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/TransitionData">TransitionData</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/uistate/UIHandler">UIHandler</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/uistate/UIState">UIState</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/uistate/UIStateUIHandler">UIStateUIHandler</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/presentation/ViewController">ViewController</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/presentation/ViewControllerFactory">ViewControllerFactory</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/presentation/ViewControllerFactoryBuilder">ViewControllerFactoryBuilder</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/android/presentation/ViewProvidingScene">ViewProvidingScene</a>
+    </li>
+    
+
+        
+            
+    
+    <li>
+        <a href="https://nhaarman.github.io/acorn/com/nhaarman/acorn/navigation/WizardNavigator">WizardNavigator</a>
+    </li>
+    
+
+        
+        </ul>
+    </li>
+
+                
+            </ul>
+        </nav>
+        
+
+        <!-- Section -->
+        <section>
+            <p class="text-center">
+                Currently 1.1.0. Created with <a href="https://orchid.netlify.com">Orchid </a> and <b>Orchid Editorial Theme</b>.
+            </p>
+        </section>
+
+        <!-- Footer -->
+        <footer id="footer">
+            <p class="copyright text-center">&copy; Acorn. All rights reserved.<br>Design by <a href="https://html5up.net">HTML5 UP</a></p>
+        </footer>
+
+    </div>
+</div>
+
+</div>
+
+<!-- start:inject scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js"></script>
+<script src="https://nhaarman.github.io/acorn/Editorial/6090f8c6/assets/js/editorial_util.js"></script>
+<script src="https://nhaarman.github.io/acorn/Editorial/6090f8c6/assets/js/editorial_main.js"></script>
+<script src="https://nhaarman.github.io/acorn/Editorial/6090f8c6/assets/js/editorial_orchidCustomizations.js"></script>
+<script src="https://unpkg.com/lunr/lunr.js"></script>
+<script src="https://nhaarman.github.io/acorn/Editorial/6090f8c6/assets/js/orchidSearch.js"></script>
+<!-- end:inject scripts -->
+
+</body>
+</html>
