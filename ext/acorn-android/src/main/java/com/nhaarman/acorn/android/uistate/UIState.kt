@@ -339,12 +339,17 @@ internal class VisibleWithDestination(
             "UI becomes invisible, detaching container from ${currentDestination.scene}."
         )
         currentDestination.forceDetach(currentViewController)
+
+        val destination = scheduledDestination
+            ?: transitionCallback?.pendingDestination
+            ?: currentDestination
+
         transitionCallback = null
 
         return NotVisibleWithDestination(
             root,
             transitionFactory,
-            currentDestination,
+            destination,
             currentViewController
         )
     }
@@ -413,6 +418,9 @@ internal class VisibleWithDestination(
         private val newDestination: Destination
     ) : CancellableTransitionCallback {
 
+        override val pendingDestination: Destination
+            get() = newDestination
+
         private var done = false
             set(done) {
                 field = done
@@ -472,6 +480,8 @@ internal class VisibleWithDestination(
     }
 
     private interface CancellableTransitionCallback : SceneTransition.Callback {
+
+        val pendingDestination: Destination
 
         fun cancel()
     }

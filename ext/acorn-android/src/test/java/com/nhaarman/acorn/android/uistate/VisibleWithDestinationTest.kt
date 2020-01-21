@@ -322,6 +322,39 @@ internal class VisibleWithDestinationTest {
             /* Then */
             verify(scene, times(1)).detach(sceneViewController)
         }
+
+        @Test
+        fun `'uiNotVisible' during a transition remembers the transition's destination`() {
+            /* When */
+            val newState = state.uiNotVisible()
+
+            /* Then */
+            verify(scene2, never()).attach(sceneViewController)
+
+            /* When */
+            newState.uiVisible()
+
+            /* Then */
+            verify(scene2).attach(sceneViewController)
+        }
+
+        @Test
+        fun `'uiNotVisible' during a transition with a scheduled remembers the scheduled transition's destination`() {
+            /* Given */
+            state.withScene(scene3, sceneViewControllerFactory3, null)
+
+            /* When */
+            val newState = state.uiNotVisible()
+
+            /* Then */
+            verify(scene3, never()).attach(sceneViewController)
+
+            /* When */
+            newState.uiVisible()
+
+            /* Then */
+            verify(scene3).attach(sceneViewController)
+        }
     }
 
     @Nested
